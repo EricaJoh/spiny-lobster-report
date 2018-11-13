@@ -19,58 +19,83 @@ library(knitr)
 library(pwr)
 library(vcdExtra)
 
-size = read_csv("lobster_size_abundance.csv")
+size = read_csv("lobster_size_abundance.csv") %>% filter(SIZE != -99999)
 traps = read_csv("lobster_traps (1).csv")
+
+#need to select 5 relevant sites
 ```
 Change lobster sive data to tidy data
 ```{r}
 size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE)
 #header = TRUE only works with "read.csv". 
-size_case = expand.dft(size, freq = "COUNT")
+size_case = expand.dft(size_frequency, freq = "COUNT")
 #This code only works if "header = TRUE" is put into the read.csv (note no "_") code.
 ```
 
 
 1. Lobster abundance and fishing pressure (2012 - 2017)
-Describe trends in lobster abundance (counts) and fishing pressure (trap buoys) at the five locations from
-2012 - 2017. Ignore transect information - we are only interested in evaluating abundance and pressure on the
-order of SITE. Note: you are not expected to use regression here - just think of ways to clearly
-describe annual totals visually and in text, noting important trends, events and differences.
+Describe trends in lobster abundance (counts) and fishing pressure (trap buoys) at the five locations from 2012 - 2017. Ignore transect information - we are only interested in evaluating abundance and pressure on the order of SITE. Note: you are not expected to use regression here - just think of ways to clearly describe annual totals visually and in text, noting important trends, events and differences.
 ```{r}
+ggplot() +
+geom_point(data= traps, aes(x=TRAPS, y=SITE)) +
+labs(y="TRAPS")  +
+theme_classic() +
+ggtitle("TRAPS 2017-2017")+
+  geom_jitter(width = 0.1)
 
+ggplot() +
+geom_point(data= size, aes(x=COUNT, y=SITE)) +
+labs(y="COUNT")  +
+theme_classic() +
+ggtitle("ABUNDANCE 2012-2017")+
+  geom_jitter(width = 0.1)
 ```
 
 
 2. Compare mean lobster size by site in 2017
-Compare mean lobster sizes (carapace length (mm)) across the five sites for lobster observations collected in
-2017. Warning: the size data are not in tidy format. There are rows that contain size information for multiple
-lobsters observed (e.g., if the researcher saw 3 lobsters all with carapace length ~ 60 mm, then they will have a
-single row where COUNT = 3 and SIZE = 60). You’ll want to get this into case format - where each lobster
-has its own row - before doing statistical analyses. There are many ways to do this. One hint: function
-expand.dft in the vcdExtra package (it doesn’t like tibbles, so you might need to coerce to data.frame first).
+Compare mean lobster sizes (carapace length (mm)) across the five sites for lobster observations collected in 2017. 
 ```{r}
+summary_size_2017 = size_case %>% 
+  filter(SIZE != "-99999", YEAR == 2017) %>% 
+  group_by(SITE) %>% 
+  summarize(
+            "Median (mm)" = round(median(SIZE),2),
+            "Maximum (mm)" = max(SIZE),
+            "Mean (mm)" = round (mean(SIZE),2),
+            "SD (mm)" = round(sd(SIZE),2)
+    )
+summary_size_2017  
+kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017") %>% 
+    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
+##group_by function is not working
+
+#ANOVA may be a good comaprison tool to start with, then 2 sample t-tests
 ```
 
 3. Changes in lobster size at MPA and non-MPA sites (comparing only 2012 and 2017 sizes)
-From the data description (http://sbc.lternet.edu/cgi-bin/showDataset.cgi?docid=knb-lter-sbc.77):
-“Data on abundance, size and fishing pressure of California spiny lobster (Panulirus interruptus)
-are collected along the mainland coast of the Santa Barbara Channel. Spiny lobsters are an
-important predator in giant kelp forests off southern California. Two SBC LTER study reefs are
-located in or near the California Fish and Game Network of Marine Protected Areas (MPA), Naples
+
+From the data description (http://sbc.lternet.edu/cgi-bin/showDataset.cgi?docid=knb-lter-sbc.77): 
+
+“Data on abundance, size and fishing pressure of California spiny lobster (Panulirus interruptus) are collected along the mainland coast of the Santa Barbara Channel. Spiny lobsters are an important predator in giant kelp forests off southern California. 
+
+Two SBC LTER study reefs are located in or near the California Fish and Game Network of Marine Protected Areas (MPA), Naples
 and Isla Vista, both established as MPAs on 2012-01-01. MPAs provide a unique opportunity to
 investigate the effects of fishing on kelp forest community dynamics. Sampling began in 2012 and
-is ongoing.”
-At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes
-in 2012 and 2017 compare? At the non-MPA sites?
+is ongoing.” 
+
+At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
 ```{r}
 
 ```
+
 4. Proportions of “legal” lobsters at the 5 sites in 2017
-The legal minimum carapace size for lobster is 82.6 mm. What proportion of observed lobsters at each site
-are above the legal minimum? Does that proportion differ significantly across the 5 sites? Note: We’ll be
-doing chi-square in labs next week, or go ahead with maximum resourcefulness and check out the chisq.test()
-function on your own!
+
+The legal minimum carapace size for lobster is 82.6 mm. What proportion of observed lobsters at each site are above the legal minimum? 
+
+Does that proportion differ significantly across the 5 sites? 
+
+Note: Use the chisq.test() function
 ```{r}
 
 ```
