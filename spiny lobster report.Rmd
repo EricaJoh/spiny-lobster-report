@@ -56,13 +56,30 @@ summary_traps = traps%>%
 kable(summary_traps, caption ="LTER SBC lobster traps by site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 ```
-
+```{r}
+size_mpa = size %>% filter(SITE == "NAPL"|SITE == "IVEE")
+ggplot(size_mpa, aes(x=SIZE))+
+  geom_histogram()+
+  facet_wrap(~SITE)
+```
 
 ```{r}
 #Need help displaying this info...
 
+size_non_mpa = size %>% filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK")
+ggplot(size_non_mpa, aes(x=SIZE))+
+  geom_histogram()+
+  facet_wrap(~SITE)
+  
+
 
 ```
+```{r}
+ggplot(traps, aes(x=TRAPS))+
+  geom_density()+
+  facet_wrap(~SITE)
+```
+
 
 
 2. Compare mean lobster size by site in 2017
