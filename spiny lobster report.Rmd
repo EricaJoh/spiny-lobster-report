@@ -13,20 +13,21 @@ library(tidyverse)
 library(kableExtra)
 library(effsize)
 library(plotly)
-library(plyr)
 library(dplyr)
 library(knitr)
 library(pwr)
 library(vcdExtra)
 
-size = read_csv("lobster_size_abundance.csv") %>% filter(SIZE != -99999)
-traps = read_csv("lobster_traps (1).csv")
+size = read_csv("lobster_size_abundance.csv") %>% filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
+
+traps = read_csv("lobster_traps (1).csv") %>% 
+  filter(TRAPS !="0", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
 
 #need to select 5 relevant sites
 ```
 Change lobster sive data to tidy data
 ```{r}
-size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE)
+size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE)%>% filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
 #header = TRUE only works with "read.csv". 
 size_case = expand.dft(size_frequency, freq = "COUNT")
 #This code only works if "header = TRUE" is put into the read.csv (note no "_") code.
@@ -36,19 +37,31 @@ size_case = expand.dft(size_frequency, freq = "COUNT")
 1. Lobster abundance and fishing pressure (2012 - 2017)
 Describe trends in lobster abundance (counts) and fishing pressure (trap buoys) at the five locations from 2012 - 2017. Ignore transect information - we are only interested in evaluating abundance and pressure on the order of SITE. Note: you are not expected to use regression here - just think of ways to clearly describe annual totals visually and in text, noting important trends, events and differences.
 ```{r}
-ggplot() +
-geom_point(data= traps, aes(x=TRAPS, y=SITE)) +
-labs(y="TRAPS")  +
-theme_classic() +
-ggtitle("TRAPS 2017-2017")+
-  geom_jitter(width = 0.1)
+summary_size = size%>% 
+  group_by(YEAR, SITE) %>% 
+  summarize(Count = round(sum(COUNT),2)
+    )
 
-ggplot() +
-geom_point(data= size, aes(x=COUNT, y=SITE)) +
-labs(y="COUNT")  +
-theme_classic() +
-ggtitle("ABUNDANCE 2012-2017")+
-  geom_jitter(width = 0.1)
+kable(summary_size, caption ="LTER SBC lobster abundance by site, 2012- 2017") %>% 
+    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
+
+```
+
+```{r}
+summary_traps = traps%>% 
+  group_by(YEAR, SITE) %>% 
+  summarize(Count = round(sum(TRAPS),2)
+    )
+
+kable(summary_traps, caption ="LTER SBC lobster traps by site, 2012- 2017") %>% 
+    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
+```
+
+
+```{r}
+#Need help displaying this info...
+
+
 ```
 
 
@@ -68,7 +81,6 @@ summary_size_2017
 kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
-##group_by function is not working
 
 #ANOVA may be a good comaprison tool to start with, then 2 sample t-tests
 ```
