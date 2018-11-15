@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r, include=FALSE}
+#load libraries
 library(tidyverse)
 library(kableExtra)
 library(effsize)
@@ -17,13 +18,17 @@ library(dplyr)
 library(knitr)
 library(pwr)
 library(vcdExtra)
+library(plyr)
 
 size = read_csv("lobster_size_abundance.csv") %>% 
   filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP") # size data is lobster size abundance, filtered out NAs and selected 5 sites needed for report
 
 traps = read_csv("lobster_traps (1).csv") %>% 
-  filter(TRAPS !="0", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP") # filtered out zero values and selected sites for report
+  filter(TRAPS !="0", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP") 
+# filtered out NAs and selected 5 sites needed for report
 
+abundance_traps=read_csv("lobster_abundance_traps_20122017.csv")
+# read in a new file that includes total number of lobsters and number of traps at non-MPA sites by site as a function of year
 ```
 
 
@@ -35,6 +40,7 @@ traps = read_csv("lobster_traps (1).csv") %>%
 size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE) %>% #tidy data = size_frequency file
   filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
 #header = TRUE only works with "read.csv". 
+
 size_case = expand.dft(size_frequency, freq = "COUNT")
 #This code only works if "header = TRUE" is put into the read.csv (note no "_") code.
 ```
@@ -43,47 +49,83 @@ size_case = expand.dft(size_frequency, freq = "COUNT")
 1. Lobster abundance and fishing pressure (2012 - 2017)
 Describe trends in lobster abundance (counts) and fishing pressure (trap buoys) at the five locations from 2012 - 2017. Ignore transect information - we are only interested in evaluating abundance and pressure on the order of SITE. Note: you are not expected to use regression here - just think of ways to clearly describe annual totals visually and in text, noting important trends, events and differences.
 ```{r}
-summary_size = size%>% 
+
+#summary tables for display. needs to be expanded
+summary_non_mpa_size = size%>% 
   group_by(YEAR, SITE) %>% 
-  summarize(Count = round(sum(COUNT),2)
+  filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK") %>% 
+  summarize(COUNT = round(sum(COUNT),2)
     )
 
-kable(summary_size, caption ="LTER SBC lobster abundance by site, 2012- 2017") %>% 
+
+kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance by non-mpa site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
+
 
 ```
 
 ```{r}
+#summary tables for display. needs to be expanded
 summary_traps = traps%>% 
   group_by(YEAR, SITE) %>% 
-  summarize(Count = round(sum(TRAPS),2)
+  summarize(COUNT = round(sum(TRAPS),2)
     )
 
 kable(summary_traps, caption ="LTER SBC lobster traps by site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 ```
+
+
+
 ```{r}
-size_mpa = size %>% filter(SITE == "NAPL"|SITE == "IVEE")
-ggplot(size_mpa, aes(x=SIZE))+
-  geom_histogram()+
-  facet_wrap(~SITE)
+
+#Plot lobster abundance and fishing pressure in non-mpa sites
+
+ggplot(abundance_traps)+
+  geom_line(aes(x=year, y=lobster, col= "Lobsters"))+
+  geom_line(aes(x=year, y= traps, col= "Traps"))+
+  facet_wrap(~site)+
+  labs(y="Lobster Abundance (n)", x= "Year", col= "Key") +
+scale_y_continuous(sec.axis = sec_axis(~., name = "Lobster Traps (n)")) +
+theme_classic()+
+  theme(axis.text.x=element_text(angle=60, hjust=1))
+  ggtitle("Lobster Abundance and Fishing Pressure in SBC LTER Non-MPA sites, 2012-2017")
+
+
 ```
 
 ```{r}
-#Need help displaying this info...
+# lobster summary for mpa sites only
+size_mpa = summary_size %>% 
+  filter(SITE == "NAPL"|SITE == "IVEE")
 
-size_non_mpa = size %>% filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK")
+#Plot lobster abundance in mpa sites, no fishing pressure
+
+ggplot(size_mpa)+
+  geom_line(aes(x=YEAR, y=(COUNT), col= "Lobsters"))+
+  facet_wrap(~SITE)+
+  labs(y="Lobster Abundance (n)", x= "Year", col= "Key")+
+  theme_classic()+
+  theme(axis.text.x=element_text(angle=60, hjust=1))+
+  ggtitle("Lobster Abundance SBC LTER MPA sites, 2012-2017")
+```
+
+
+```{r}
+#data exploration, lobster carapace size
+
+size_non_mpa = size %>% filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK"|SITE == "NAPL"|SITE == "IVEE")
+
 ggplot(size_non_mpa, aes(x=SIZE))+
   geom_histogram()+
+  facet_wrap(~SITE)
+
+ggplot(size_non_mpa, aes(sample=SIZE))+
+  geom_qq()+
   facet_wrap(~SITE)
   
 
 
-```
-```{r}
-ggplot(traps, aes(x=TRAPS))+
-  geom_density()+
-  facet_wrap(~SITE)
 ```
 
 
@@ -91,6 +133,8 @@ ggplot(traps, aes(x=TRAPS))+
 2. Compare mean lobster size by site in 2017
 Compare mean lobster sizes (carapace length (mm)) across the five sites for lobster observations collected in 2017. 
 ```{r}
+
+#summary table of lobster size
 summary_size_2017 = size_case %>% 
   filter(SIZE != "-99999", YEAR == 2017) %>% 
   group_by(SITE) %>% 
@@ -98,12 +142,13 @@ summary_size_2017 = size_case %>%
             "Median (mm)" = round(median(SIZE),2),
             "Maximum (mm)" = max(SIZE),
             "Mean (mm)" = round (mean(SIZE),2),
-            "SD (mm)" = round(sd(SIZE),2)
+            "SD (mm)" = round(sd(SIZE),2),
+            "Sample size (n)" = length(unique(SIZE))
     )
-summary_size_2017  
-kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017") %>% 
-    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
+
+kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017, n = 1668") %>% 
+    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 #ANOVA may be a good comaprison tool to start with, then 2 sample t-tests
 ```
