@@ -18,16 +18,22 @@ library(knitr)
 library(pwr)
 library(vcdExtra)
 
-size = read_csv("lobster_size_abundance.csv") %>% filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
+size = read_csv("lobster_size_abundance.csv") %>% 
+  filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP") # size data is lobster size abundance, filtered out NAs and selected 5 sites needed for report
 
 traps = read_csv("lobster_traps (1).csv") %>% 
-  filter(TRAPS !="0", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
+  filter(TRAPS !="0", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP") # filtered out zero values and selected sites for report
 
-#need to select 5 relevant sites
 ```
-Change lobster sive data to tidy data
+
+
+
+# Change lobster size data to tidy data
+
+
 ```{r}
-size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE)%>% filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
+size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE) %>% #tidy data = size_frequency file
+  filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
 #header = TRUE only works with "read.csv". 
 size_case = expand.dft(size_frequency, freq = "COUNT")
 #This code only works if "header = TRUE" is put into the read.csv (note no "_") code.
