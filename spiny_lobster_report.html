@@ -650,17 +650,19 @@ ggplot(size_non_mpa, aes(x=SIZE))+
 </ol>
 <pre class="r"><code>#summary table of lobster size
 
-summary_size_2017 = size_case %&gt;% 
+size_2017 = size_case %&gt;% 
   filter(SIZE != &quot;-99999&quot;, YEAR == 2017) %&gt;% 
-  group_by(SITE) %&gt;% 
-  summarize(
+  group_by(SITE)
+        
+summary_size_2017 = summarize(size_2017,
             &quot;Median (mm)&quot; = round(median(SIZE),2),
             &quot;Maximum (mm)&quot; = max(SIZE),
             &quot;Mean (mm)&quot; = round (mean(SIZE),2),
             &quot;SD (mm)&quot; = round(sd(SIZE),2),
-            &quot;Sample size (n)&quot; = length(unique(SIZE))
+            &quot;Sample size (n)&quot; = length(unique(SIZE)),
+            &quot;Variance&quot; = round(var(SIZE),2) #test for equal variance
     )
-
+#General rule: if the greatest variances is &lt; 4x bigger than the smallest variance, then usually those are &quot;close enough&quot; to assume equal variance
 
 kable(summary_size_2017, caption =&quot;LTER SBC mean lobster carapace length (mm) by site in 2017, n = 1668&quot;) %&gt;% 
     kable_styling(bootstrap_option = c(&quot;striped&quot;, &quot;hover&quot;), full_width = FALSE)</code></pre>
@@ -688,6 +690,9 @@ SD (mm)
 <th style="text-align:right;">
 Sample size (n)
 </th>
+<th style="text-align:right;">
+Variance
+</th>
 </tr>
 </thead>
 <tbody>
@@ -710,6 +715,9 @@ AQUE
 <td style="text-align:right;">
 20
 </td>
+<td style="text-align:right;">
+141.40
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -729,6 +737,9 @@ CARP
 </td>
 <td style="text-align:right;">
 50
+</td>
+<td style="text-align:right;">
+174.48
 </td>
 </tr>
 <tr>
@@ -750,6 +761,9 @@ IVEE
 <td style="text-align:right;">
 61
 </td>
+<td style="text-align:right;">
+205.06
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -769,6 +783,9 @@ MOHK
 </td>
 <td style="text-align:right;">
 26
+</td>
+<td style="text-align:right;">
+86.12
 </td>
 </tr>
 <tr>
@@ -790,10 +807,22 @@ NAPL
 <td style="text-align:right;">
 33
 </td>
+<td style="text-align:right;">
+129.69
+</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>#ANOVA may be a good comaprison tool to start with, then 2 sample t-tests</code></pre>
+<pre class="r"><code>#Variances are close- largest variance is not 4x  &gt; smallest variance.
+
+#One-Way Anova:
+
+##help! can't get aov.test and paircomp tests to work.
+#lobster_aov = aov.test(SIZE ~ SITE, data = summary_size_2017)
+#lobster_aov
+
+#post_hoc = paircomp(lobster_aov)
+#post_hoc</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Changes in lobster size at MPA and non-MPA sites (comparing only 2012 and 2017 sizes)</li>
 </ol>

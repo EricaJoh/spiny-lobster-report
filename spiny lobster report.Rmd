@@ -18,6 +18,8 @@ library(dplyr)
 library(knitr)
 library(pwr)
 library(vcdExtra)
+library(car)
+library(onewaytests)
 
 
 size = read_csv("lobster_size_abundance.csv") %>% 
@@ -143,22 +145,42 @@ Compare mean lobster sizes (carapace length (mm)) across the five sites for lobs
 
 #summary table of lobster size
 
-summary_size_2017 = size_case %>% 
+size_2017 = size_case %>% 
   filter(SIZE != "-99999", YEAR == 2017) %>% 
-  group_by(SITE) %>% 
-  summarize(
+  group_by(SITE)
+        
+summary_size_2017 = summarize(size_2017,
             "Median (mm)" = round(median(SIZE),2),
             "Maximum (mm)" = max(SIZE),
             "Mean (mm)" = round (mean(SIZE),2),
             "SD (mm)" = round(sd(SIZE),2),
-            "Sample size (n)" = length(unique(SIZE))
+            "Sample size (n)" = length(unique(SIZE)),
+            "Variance" = round(var(SIZE),2) #test for equal variance
     )
-
+#General rule: if the greatest variances is < 4x bigger than the smallest variance, then usually those are "close enough" to assume equal variance
 
 kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017, n = 1668") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
-#ANOVA may be a good comaprison tool to start with, then 2 sample t-tests
+
+```
+
+```{r}
+
+#Variances are close- largest variance is not 4x  > smallest variance.
+
+#One-Way Anova:
+
+##help! can't get aov.test and paircomp tests to work.
+#lobster_aov = aov.test(SIZE ~ SITE, data = summary_size_2017)
+#lobster_aov
+
+#post_hoc = paircomp(lobster_aov)
+#post_hoc
+```
+
+```{r}
+
 ```
 
 3. Changes in lobster size at MPA and non-MPA sites (comparing only 2012 and 2017 sizes)
