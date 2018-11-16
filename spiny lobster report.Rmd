@@ -1,5 +1,5 @@
 ---
-title: "spiny-lobster-report"
+title: "Spiny Lobster Report"
 author: "Erica Johnson"
 date: "11/9/2018"
 output: html_document
@@ -35,11 +35,8 @@ abundance_traps=read_csv("lobster_abundance_traps_20122017.csv")
 
 
 
-# Change lobster size data to tidy data
-
-
-```{r}
-
+```{r echo=FALSE}
+#Change lobster size data to tidy data
 #for tidy data, use this size_frequency file
 size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE) %>% 
   filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
@@ -52,14 +49,18 @@ size_case = expand.dft(size_frequency, freq = "COUNT")
 
 1. Lobster abundance and fishing pressure (2012 - 2017)
 Describe trends in lobster abundance (counts) and fishing pressure (trap buoys) at the five locations from 2012 - 2017. Ignore transect information - we are only interested in evaluating abundance and pressure on the order of SITE. Note: you are not expected to use regression here - just think of ways to clearly describe annual totals visually and in text, noting important trends, events and differences.
-```{r}
+```{r echo=FALSE}
 
 #summary table for display. table needs to be expanded
 summary_non_mpa_size = size%>% 
   group_by(YEAR, SITE) %>% 
   filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK") %>% 
-  summarize(COUNT = round(sum(COUNT),2)
-    )
+  count(SITE) %>% 
+  spread(YEAR,n)
+    
+
+  
+ 
 
 
 kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance by non-mpa site, 2012- 2017") %>% 
@@ -68,13 +69,14 @@ kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance by non-mpa site
 
 ```
 
-```{r}
+```{r echo=FALSE}
 #summary table for display. table needs to be expanded
 summary_traps = traps%>% 
   group_by(YEAR, SITE) %>% 
-  summarize(COUNT = round(sum(TRAPS),2)) 
+  count(SITE) %>% 
+  spread(YEAR,n)
 
-kable(summary_traps, caption ="LTER SBC lobster traps by site, 2012- 2017") %>% 
+kable(summary_traps, caption ="LTER SBC lobster traps by site, 2012- 2017", booktabs= T) %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 
@@ -82,7 +84,7 @@ kable(summary_traps, caption ="LTER SBC lobster traps by site, 2012- 2017") %>%
 
 
 
-```{r}
+```{r echo=FALSE}
 
 #Plot lobster abundance and fishing pressure in non-mpa sites
 
@@ -99,18 +101,19 @@ theme_classic()+
 
 ```
 
-```{r}
+```{r echo=FALSE}
 # lobster summary for mpa sites only
 size_mpa = size%>% 
   group_by(YEAR, SITE) %>% 
-  filter(SITE == "NAPL"|SITE == "IVEE") %>% 
-  summarize(COUNT = round(sum(COUNT),2)
-    )
+  filter(SITE == "NAPL"|SITE == "IVEE")
+
+ sum_mpa = summarize(size_mpa,COUNT = round(sum(COUNT),2))
+
  
 
 #Plot lobster abundance in mpa sites, no fishing pressure
 
-ggplot(size_mpa)+
+ggplot(sum_mpa)+
   geom_line(aes(x=YEAR, y=(COUNT), col= "Lobsters"))+
   labs(y="Lobster Abundance (n)", x= "Year", col= "Key")+
   theme_classic()+
@@ -120,19 +123,18 @@ ggplot(size_mpa)+
 ```
 
 
-```{r}
+```{r include=FALSE}
 #data exploration, lobster carapace size
 
-size_non_mpa = size %>% filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK"|SITE == "NAPL"|SITE == "IVEE")
+size_non_mpa = size %>% filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK")
 
-ggplot(size_non_mpa, aes(x=SIZE))+
+ggplot(size, aes(x=SIZE))+
   geom_histogram()+
   facet_wrap(~SITE)
 
-ggplot(size_non_mpa, aes(sample=SIZE))+
+ggplot(size, aes(sample=SIZE))+
   geom_qq()+
   facet_wrap(~SITE)
-  
 
 
 ```
@@ -141,7 +143,7 @@ ggplot(size_non_mpa, aes(sample=SIZE))+
 
 2. Compare mean lobster size by site in 2017
 Compare mean lobster sizes (carapace length (mm)) across the five sites for lobster observations collected in 2017. 
-```{r}
+```{r echo=FALSE}
 
 #summary table of lobster size
 
@@ -171,12 +173,11 @@ kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by
 
 #One-Way Anova:
 
-##help! can't get aov.test and paircomp tests to work.
-#lobster_aov = aov.test(SIZE ~ SITE, data = summary_size_2017)
-#lobster_aov
+lobster_aov = aov(SIZE ~ SITE, data = size_2017)
+lobster_aov
 
-#post_hoc = paircomp(lobster_aov)
-#post_hoc
+TukeyHSD(lobster_aov)
+
 ```
 
 ```{r}
@@ -196,8 +197,27 @@ is ongoing.”
 
 At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
 ```{r}
+size_2012_2017_non = size_non_mpa %>% 
+  filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>% 
+  group_by(SITE)
+
+size_2012_2017_mpa = size_mpa %>% 
+  filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>% 
+  group_by(SITE)
+
+ggplot(size_2012_2017_non, aes(x=SIZE))+
+  geom_histogram(aes(col =SITE))+
+  facet_wrap(~YEAR)+
+  theme_classic()
+
+ggplot(size_2012_2017_mpa, aes(x=SIZE))+
+  geom_histogram(aes(col =SITE))+
+  facet_wrap(~YEAR)+
+  theme_classic()
+
 
 ```
+
 
 4. Proportions of “legal” lobsters at the 5 sites in 2017
 
