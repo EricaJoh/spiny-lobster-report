@@ -1,13 +1,14 @@
 ---
 title: "Spiny Lobster Report"
-author: "Erica Johnson"
-date: "11/9/2018"
+author: "Erica Johnson & Kristan Culbert"
+date: "11/19/2018"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 ```{r, include=FALSE}
 #load libraries
 library(tidyverse)
@@ -197,6 +198,8 @@ is ongoing.”
 
 At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
 ```{r}
+
+# Kristan: need to create data frames for 2012 MPA, 2012 non-MPA, 2017 MPA and 2017 non-MPA data, then run an ANOVA (to compare means?)
 size_2012_2017_non = size_non_mpa %>% 
   filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>% 
   group_by(SITE)
