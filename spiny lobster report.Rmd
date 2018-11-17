@@ -44,6 +44,11 @@ size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE) %>%
 
 size_case = expand.dft(size_frequency, freq = "COUNT")
 #This code only works if "header = TRUE" is put into the read.csv (note no "_") code.
+
+traps_frequency= read.csv("lobster_traps (1).csv", header = TRUE) %>% 
+  filter(TRAPS != "0", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
+
+traps_case = expand.dft(traps_frequency, freq = "TRAPS")
 ```
 
 
@@ -52,26 +57,31 @@ Describe trends in lobster abundance (counts) and fishing pressure (trap buoys) 
 ```{r echo=FALSE}
 
 #summary table for display. table needs to be expanded
-summary_non_mpa_size = size%>% 
+summary_non_mpa_size = size_case%>% 
   group_by(YEAR, SITE) %>% 
   filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK") %>% 
   count(SITE) %>% 
   spread(YEAR,n)
     
 
-  
- 
-
-
-kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance by non-mpa site, 2012- 2017") %>% 
+kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance by non-MPA site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
+summary_mpa_size = size_case%>% 
+  group_by(YEAR, SITE) %>% 
+  filter(SITE == "IVEE"| SITE == "NAPL") %>% 
+  count(SITE) %>% 
+  spread(YEAR,n)
+    
+
+kable(summary_mpa_size, caption ="LTER SBC lobster abundance by MPA site, 2012- 2017") %>% 
+    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 ```
 
 ```{r echo=FALSE}
 #summary table for display. table needs to be expanded
-summary_traps = traps%>% 
+summary_traps = traps_case%>% 
   group_by(YEAR, SITE) %>% 
   count(SITE) %>% 
   spread(YEAR,n)
@@ -123,7 +133,7 @@ ggplot(sum_mpa)+
 ```
 
 
-```{r include=FALSE}
+```{r}
 #data exploration, lobster carapace size
 
 size_non_mpa = size %>% filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK")
@@ -197,6 +207,10 @@ is ongoing.”
 
 At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
 ```{r}
+
+
+#How do the changes in 2012-2017 of mpa sites compare to the changes in 2017-2017 of non-mpa sites. Is there a significant difference in the recovery of MPAs vs. non-MPAs?
+
 size_2012_2017_non = size_non_mpa %>% 
   filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>% 
   group_by(SITE)
@@ -220,11 +234,8 @@ ggplot(size_2012_2017_mpa, aes(x=SIZE))+
 
 
 4. Proportions of “legal” lobsters at the 5 sites in 2017
-
 The legal minimum carapace size for lobster is 82.6 mm. What proportion of observed lobsters at each site are above the legal minimum? 
-
 Does that proportion differ significantly across the 5 sites? 
-
 Note: Use the chisq.test() function
 ```{r}
 
