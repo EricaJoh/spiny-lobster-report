@@ -138,6 +138,17 @@ ggplot(sum_mpa)+
   facet_wrap(~SITE)
 ```
 
+```{r}
+#Kruskal-Wallis rank sum test
+k_test_count = kruskal.test(SITE~COUNT, data = size)
+k_test_count
+
+#Cliff's delta
+cliff_eff_count = cliff.delta(COUNT~SITE, data = size)
+cliff_eff_count
+#0 means data overlap, 1 means no overlap
+
+```
 
 
 
