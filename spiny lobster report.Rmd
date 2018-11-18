@@ -347,7 +347,14 @@ lobster_legal_table = lobster_legal %>%
   count(SITE, size) %>% 
   spread(size, n) %>% 
   select(-SITE)
-lobster_legal_table
+
+
+lobster_legal_table2 = lobster_legal %>% 
+  count(SITE, size) %>% 
+  spread(size, n) 
+
+kable(lobster_legal_table2, caption ="LTER SBC Legal and Illegal Lobster Size Count by site in 2017") %>% 
+    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 ```
 
@@ -358,7 +365,10 @@ lobster_legal_table
 chi_test = chisq.test(lobster_legal_table, simulate.p.value = TRUE)
 chi_test
 
-#proportions differ significantly across the 5 sites (chi test shows less than 0.01 % probability, reject the null )
+#Null hypothesis: No association between variables studied (e.g. age and side-dish preference). The null hypothesis is independence.
+#Alternative hypothesis: There is an association between variables studied (nonindependence)
+
+#proportions differ significantly across the 5 sites (chi test shows less than 0.01 % probability, reject the null. There is an association betwen SITE and LEGAL lobster size  )
 
 ```
 
