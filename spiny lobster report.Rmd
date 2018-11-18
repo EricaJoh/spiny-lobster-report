@@ -197,8 +197,8 @@ size_2017 = size_case %>%
 summary_size_2017 = summarize(size_2017,
             "Mean (mm)" = round (mean(SIZE),2),
             "SD (mm)" = round(sd(SIZE),2),
-            "Sample size (n)" = length(unique(SIZE)),
-            "Variance" = round(var(SIZE),2) #test for equal variance
+            "Sample size (n)" = length(unique(SIZE))
+            #"Variance" = round(var(SIZE),2) #test for equal variance
     )
 
 kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017") %>% 
@@ -288,9 +288,9 @@ IVEE = size_case %>%
   filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "IVEE") %>% 
   group_by(YEAR)
 
-t.test(data = IVEE,alternative = "greater",  SIZE~YEAR)
+t.test(data = IVEE,SIZE~YEAR)
 
-#no significant change here
+#SIGNIFICANT change here
 
 ```
 
@@ -299,7 +299,7 @@ CARP = size_case %>%
   filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "CARP") %>% 
   group_by(YEAR)
 
-t.test(data = CARP,alternative = "greater",  SIZE~YEAR)
+t.test(data = CARP,SIZE~YEAR)
 
 #no significant change here
 
@@ -313,7 +313,7 @@ MOHK = size_case %>%
 t.test(data = MOHK, SIZE~YEAR)
 
 
-#significant change here
+#SIGNIFICANT change here
 ```
 
 ```{r}
