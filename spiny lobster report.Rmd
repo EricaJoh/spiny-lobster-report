@@ -23,32 +23,38 @@ library(car)
 library(onewaytests)
 
 
+# size data is lobster size abundance, filtered out NAs and selected 5 sites needed for report
 size = read_csv("lobster_size_abundance.csv") %>% 
-  filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP") # size data is lobster size abundance, filtered out NAs and selected 5 sites needed for report
+  filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP") 
 
+# filtered out NAs and selected 5 sites needed for report
 traps = read_csv("lobster_traps (1).csv") %>% 
   filter(TRAPS !="0", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP") 
-# filtered out NAs and selected 5 sites needed for report
 
-abundance_traps=read_csv("lobster_abundance_traps_20122017.csv")
 # read in a new file that includes total number of lobsters and number of traps at non-MPA sites by site as a function of year
+abundance_traps=read_csv("lobster_abundance_traps_20122017.csv")
+
 ```
 
 
 
-```{r echo=FALSE}
+```{r, include=FALSE}
 #Change lobster size data to tidy data
-#for tidy data, use this size_frequency file
+
+
 size_frequency = read.csv("lobster_size_abundance.csv", header = TRUE) %>% 
   filter(SIZE != "-99999", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
 #header = TRUE only works with "read.csv". 
 
+#for tidy "size" data, use this file
 size_case = expand.dft(size_frequency, freq = "COUNT")
 #This code only works if "header = TRUE" is put into the read.csv (note no "_") code.
+
 
 traps_frequency= read.csv("lobster_traps (1).csv", header = TRUE) %>% 
   filter(TRAPS != "0", SITE == "AQUE"| SITE == "NAPL"| SITE == "MOHK" | SITE == "IVEE"| SITE == "CARP")
 
+#for tidy "traps" data, use this file
 traps_case = expand.dft(traps_frequency, freq = "TRAPS")
 ```
 
@@ -59,31 +65,33 @@ Describe trends in lobster abundance (counts) and fishing pressure (trap buoys) 
 
 ```{r echo=FALSE}
 
-#summary table for display. table needs to be expanded
+#summary non MPA "lobster size" table for display
 summary_non_mpa_size = size_case%>% 
   group_by(YEAR, SITE) %>% 
   filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK") %>% 
   count(SITE) %>% 
   spread(YEAR,n)
     
-
 kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance by non-MPA site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
+
+
+#summary MPA "lobster size" table for display
 summary_mpa_size = size_case%>% 
   group_by(YEAR, SITE) %>% 
   filter(SITE == "IVEE"| SITE == "NAPL") %>% 
   count(SITE) %>% 
   spread(YEAR,n)
     
-
 kable(summary_mpa_size, caption ="LTER SBC lobster abundance by MPA site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 ```
 
 ```{r echo=FALSE}
-#summary table for display. table needs to be expanded
+
+#summary "traps" table for display. 
 
 summary_traps = traps_case%>% 
   group_by(YEAR, SITE) %>% 
@@ -125,8 +133,6 @@ size_mpa = size%>%
 
  sum_mpa = summarize(size_mpa,COUNT = round(sum(COUNT),2))
 
- 
-
 #Plot lobster abundance in mpa sites, no fishing pressure
 
 ggplot(sum_mpa)+
@@ -139,14 +145,17 @@ ggplot(sum_mpa)+
 ```
 
 ```{r}
-#Kruskal-Wallis rank sum test
+#Kruskal-Wallis rank sum test is used to see if there is a significant difference in lobster abundance between any MPA sites. Null = no significant  difference, Alternative = at least 1 significant difference 
 k_test_count = kruskal.test(SITE~COUNT, data = size)
 k_test_count
+#test returned a p-value of 11.23%, inicating that we do not have enough evidence to reject the null. There is no significant difference in abundance between any two sites.
 
-#Cliff's delta
+
+
+#Cliff's delta measures effect size of ranked based test
 cliff_eff_count = cliff.delta(COUNT~SITE, data = size)
 cliff_eff_count
-#0 means data overlap, 1 means no overlap
+#0 means data overlap, 1 means no overlap. We got a negligible Cliff's data value indicating that there is data "rank" overlap, no significant difference.
 
 ```
 
@@ -155,16 +164,21 @@ cliff_eff_count
 ```{r}
 #data exploration, lobster carapace size
 
+#new data file
 size_non_mpa = size %>% filter(SITE == "AQUE"| SITE == "CARP"|SITE == "MOHK")
 
+#exploratory histogram
 ggplot(size, aes(x=SIZE))+
   geom_histogram()+
   facet_wrap(~SITE)
 
+#exploratory q-q plots
 ggplot(size, aes(sample=SIZE))+
   geom_qq()+
   facet_wrap(~SITE)
 
+
+#data on lobster carapace length is normally distributed
 
 ```
 
@@ -181,17 +195,16 @@ size_2017 = size_case %>%
   group_by(SITE)
         
 summary_size_2017 = summarize(size_2017,
-            "Median (mm)" = round(median(SIZE),2),
-            "Maximum (mm)" = max(SIZE),
             "Mean (mm)" = round (mean(SIZE),2),
             "SD (mm)" = round(sd(SIZE),2),
             "Sample size (n)" = length(unique(SIZE)),
             "Variance" = round(var(SIZE),2) #test for equal variance
     )
-#General rule: if the greatest variances is < 4x bigger than the smallest variance, then usually those are "close enough" to assume equal variance
 
-kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017, n = 1668") %>% 
+kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
+
+#General rule: if the greatest variances is < 4x bigger than the smallest variance, then usually those are "close enough" to assume equal variance
 
 
 ```
@@ -202,13 +215,20 @@ kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by
 
 #Variances are close- largest variance is not 4x  > smallest variance.
 
-#One-Way Anova:
+#One-Way Anova is used to compare mean lobster carapace lengths of the 5 different sites.:
 
 lobster_aov = aov(SIZE ~ SITE, data = size_2017)
-lobster_aov
+summary(lobster_aov)
+
+#Null Hypothesis (H0): All means are equal, Alternative Hypothesis (HA): At least two means are NOT equal. The Anova test returned a p-value of 0.008, which is lower than the significance level. We reject the null, at least one site mean carapace length is significantly different from the other.
+
 
 #Tukey's HSD
 TukeyHSD(lobster_aov)
+
+#the pairwise p-values show significant difference in the following sites: NAPL-CARP(MPA and non-MPA), and NAPL-IVEE (both MPA sites).
+
+#I don't think this is strong enough to say that the carapace lengths between MPA and non-MPA sites differ significantly....
 
 ```
 
@@ -226,11 +246,10 @@ From the data description (http://sbc.lternet.edu/cgi-bin/showDataset.cgi?docid=
 At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
 ```{r}
 
-# Kristan: need to create data frames for 2012 MPA, 2012 non-MPA, 2017 MPA and 2017 non-MPA data, then run an ANOVA (to compare means?)
-
 
 #How do the changes in 2012-2017 of mpa sites compare to the changes in 2017-2017 of non-mpa sites. Is there a significant difference in the recovery of MPAs vs. non-MPAs?
 
+#here are some visuals on size frequency data MPA vs non-MPA sites
 size_2012_2017_non = size_non_mpa %>% 
   filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>% 
   group_by(SITE)
@@ -253,20 +272,22 @@ ggplot(size_2012_2017_mpa, aes(x=SIZE))+
 ```
 
 ```{r}
-#1 compare IVEE and Naples REEF lobster sizes, 2012 and 2017
+#1 all lobster sizes from all sites, years 2012 and 2017 only
 
 #create data file with the years of interest and grouped by site
 size_2012_2017 = size_case %>% 
   filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012") %>% 
   group_by(SITE)
 
-#variance test
+#variance (levene's test)
 #from previous table, largest variance does not exceed 4x smallest variance
 
 #ANOVA 
-size_2012_2017_aov = aov(SIZE ~ SITE, data = size_2017)
-size_2012_2017_aov
+as.factor(size_2017$YEAR)
 
+size_2012_2017_aov = aov(YEAR~SITE, data = size_2017)
+summary(size_2012_2017_aov)
+#p-value 0.0085 is below the significance level 0.05. At least one mean is significanlty different.
 
 #Tukey's HSD
 TukeyHSD(size_2012_2017_aov)
@@ -282,11 +303,14 @@ The legal minimum carapace size for lobster is 82.6 mm. What proportion of obser
 Does that proportion differ significantly across the 5 sites? 
 Note: Use the chisq.test() function
 ```{r}
+#Create a data file indicating legal and not legal lobster sizes
+
 lobster_legal = size_case %>%
   mutate(size = ifelse(SIZE <= 82.6, "Not_Legal", "Legal")) %>% 
   filter(YEAR == 2017)
 lobster_legal
 
+#create a contingency table for the chi test
 lobster_legal_table = lobster_legal %>% 
   count(SITE, size) %>% 
   spread(size, n) %>% 
@@ -301,6 +325,7 @@ lobster_legal_table
 #Chi-squared test
 chi_test = chisq.test(lobster_legal_table, simulate.p.value = TRUE)
 chi_test
+
 #proportions differ significantly across the 5 sites (chi test shows less than 0.01 % probability, reject the null )
 
 ```
