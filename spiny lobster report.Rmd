@@ -2,7 +2,9 @@
 title: "Spiny Lobster Report"
 author: "Erica Johnson & Kristan Culbert"
 date: "11/19/2018"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -72,7 +74,7 @@ summary_non_mpa_size = size_case%>%
   count(SITE) %>% 
   spread(YEAR,n)
     
-kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance by non-MPA site, 2012- 2017") %>% 
+kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance (n) by non-MPA site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 
@@ -84,7 +86,7 @@ summary_mpa_size = size_case%>%
   count(SITE) %>% 
   spread(YEAR,n)
     
-kable(summary_mpa_size, caption ="LTER SBC lobster abundance by MPA site, 2012- 2017") %>% 
+kable(summary_mpa_size, caption ="LTER SBC lobster abundance (n) by MPA site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 ```
@@ -98,7 +100,7 @@ summary_traps = traps_case%>%
   count(SITE) %>% 
   spread(YEAR,n)
 
-kable(summary_traps, caption ="LTER SBC lobster traps by site, 2012- 2017", booktabs= T) %>% 
+kable(summary_traps, caption ="LTER SBC lobster traps (n) by site, 2012- 2017", booktabs= T) %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 
@@ -161,7 +163,7 @@ cliff_eff_count
 
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 #data exploration, lobster carapace size
 
 #new data file
@@ -195,17 +197,38 @@ size_2017 = size_case %>%
   group_by(SITE)
         
 summary_size_2017 = summarize(size_2017,
-            "Mean (mm)" = round (mean(SIZE),2),
-            "SD (mm)" = round(sd(SIZE),2),
+            "Mean (mm)" = round (mean(SIZE),1),
+            "SD (mm)" = round(sd(SIZE),1),
             "Sample size (n)" = length(unique(SIZE))
             #"Variance" = round(var(SIZE),2) #test for equal variance
     )
 
-kable(summary_size_2017, caption ="LTER SBC mean lobster carapace length (mm) by site in 2017") %>% 
+kable(summary_size_2017, caption ="LTER SBC mean lobster size (carapace length (mm)) by site in 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 #General rule: if the greatest variances is < 4x bigger than the smallest variance, then usually those are "close enough" to assume equal variance
 
+
+```
+
+```{r}
+
+summary_size_2017b = summarize(size_2017,
+            "Mean" = round (mean(SIZE),1),
+            "SD" = round(sd(SIZE),1),
+            "Sample_size" = length(unique(SIZE)))
+            
+ggplot(summary_size_2017b, aes(x = SITE, y = Mean))+
+  geom_col(fill="#69b3a2")+
+  labs(x = "SBC LTER Site", title = "SBC LTER mean lobster carapace length, 2017", y = "Mean carapace length & standard deviation (mm)")+
+  geom_errorbar(aes(ymin=Mean-SD, ymax=Mean+SD),
+                width=.2,
+                position=position_dodge(.6)) +
+    theme_classic()
+```
+
+
+```{r}
 
 ```
 
@@ -245,8 +268,6 @@ From the data description (http://sbc.lternet.edu/cgi-bin/showDataset.cgi?docid=
 
 At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
 ```{r}
-
-
 #How do the changes in 2012-2017 of mpa sites compare to the changes in 2017-2017 of non-mpa sites. Is there a significant difference in the recovery of MPAs vs. non-MPAs?
 
 #here are some visuals on size frequency data MPA vs non-MPA sites
@@ -259,12 +280,14 @@ size_2012_2017_mpa = size_mpa %>%
   group_by(SITE)
 
 ggplot(size_2012_2017_non, aes(x=SIZE))+
-  geom_histogram(aes(col =SITE))+
+  geom_histogram(aes(col =SITE) )+
+  labs(x = "Carapace length (mm)", y= "Frequency (n)", title = "SBC LTER non-MPA sites lobster carapace length (mm), 2012 & 2017")+
   facet_wrap(~YEAR)+
   theme_classic()
 
 ggplot(size_2012_2017_mpa, aes(x=SIZE))+
   geom_histogram(aes(col =SITE))+
+  labs(x = "Carapace length (mm)", y= "Frequency (n)", title = "SBC LTER MPA sites lobster carapace length (mm), 2012 & 2017")+
   facet_wrap(~YEAR)+
   theme_classic()
 
@@ -338,7 +361,7 @@ Note: Use the chisq.test() function
 #Create a data file indicating legal and not legal lobster sizes
 
 lobster_legal = size_case %>%
-  mutate(size = ifelse(SIZE <= 82.6, "Not_Legal", "Legal")) %>% 
+  mutate(size = ifelse(SIZE <= 82.6, "Sub-legal (n)", "Legal (n)")) %>% 
   filter(YEAR == 2017)
 lobster_legal
 
@@ -353,7 +376,7 @@ lobster_legal_table2 = lobster_legal %>%
   count(SITE, size) %>% 
   spread(size, n) 
 
-kable(lobster_legal_table2, caption ="LTER SBC Legal and Illegal Lobster Size Count by site in 2017") %>% 
+kable(lobster_legal_table2, caption ="LTER SBC legal and sub-legal lobster size abundance (n) by site in 2017")%>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 ```
