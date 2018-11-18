@@ -233,11 +233,10 @@ At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pr
 
 
 # Kristan: need to create data frames for 2012 MPA, 2012 non-MPA, 2017 MPA and 2017 non-MPA data, then run an ANOVA (to compare means?)
-=======
+
 
 #How do the changes in 2012-2017 of mpa sites compare to the changes in 2017-2017 of non-mpa sites. Is there a significant difference in the recovery of MPAs vs. non-MPAs?
 
->>>>>>> 571d1a1ba7e3456907b00d69a65acaae8cf335a8
 size_2012_2017_non = size_non_mpa %>% 
   filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>% 
   group_by(SITE)
@@ -265,6 +264,26 @@ The legal minimum carapace size for lobster is 82.6 mm. What proportion of obser
 Does that proportion differ significantly across the 5 sites? 
 Note: Use the chisq.test() function
 ```{r}
+lobster_legal = size_case %>%
+  mutate(size = ifelse(SIZE <= 82.6, "Not_Legal", "Legal")) %>% 
+  filter(YEAR == 2017)
+lobster_legal
+
+lobster_legal_table = lobster_legal %>% 
+  count(SITE, size) %>% 
+  spread(size, n) %>% 
+  select(-SITE)
+lobster_legal_table
+
+```
+
+
+```{r}
+
+#Chi-squared test
+chi_test = chisq.test(lobster_legal_table, simulate.p.value = TRUE)
+chi_test
+#proportions differ significantly across the 5 sites (chi test shows less than 0.01 % probability, reject the null )
 
 ```
 
