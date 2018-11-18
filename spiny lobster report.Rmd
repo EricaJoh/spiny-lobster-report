@@ -275,27 +275,59 @@ ggplot(size_2012_2017_mpa, aes(x=SIZE))+
 #1 all lobster sizes from all sites, years 2012 and 2017 only
 
 #create data file with the years of interest and grouped by site
-size_2012_2017 = size_case %>% 
-  filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012") %>% 
-  group_by(SITE)
+NAPL = size_case %>% 
+  filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "NAPL") %>% 
+  group_by(YEAR)
 
-#variance (levene's test)
-#from previous table, largest variance does not exceed 4x smallest variance
+t.test(data = NAPL,alternative = "greater",  SIZE~YEAR)
 
-#ANOVA 
-as.factor(size_2017$YEAR)
-
-size_2012_2017_aov = aov(YEAR~SITE, data = size_2017)
-summary(size_2012_2017_aov)
-#p-value 0.0085 is below the significance level 0.05. At least one mean is significanlty different.
-
-#Tukey's HSD
-TukeyHSD(size_2012_2017_aov)
-
+#no significant change here
 ```
 ```{r}
+IVEE = size_case %>% 
+  filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "IVEE") %>% 
+  group_by(YEAR)
+
+t.test(data = IVEE,alternative = "greater",  SIZE~YEAR)
+
+#no significant change here
 
 ```
+
+```{r}
+CARP = size_case %>% 
+  filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "CARP") %>% 
+  group_by(YEAR)
+
+t.test(data = CARP,alternative = "greater",  SIZE~YEAR)
+
+#no significant change here
+
+```
+
+```{r}
+MOHK = size_case %>% 
+  filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "MOHK") %>% 
+  group_by(YEAR)
+
+t.test(data = MOHK, SIZE~YEAR)
+
+
+#significant change here
+```
+
+```{r}
+AQUE = size_case %>% 
+  filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "AQUE") %>% 
+  group_by(YEAR)
+
+t.test(data = AQUE,  SIZE~YEAR)
+
+#no significant change
+```
+NOTE: In regards to number 3, MOHK, a non MPA site was the only site to show significant change from 2012 to 2017 and it was a decrease in mean carapace length. It doesn't look like fishing pressure significanlty affects carapace length...
+
+
 
 
 4. Proportions of “legal” lobsters at the 5 sites in 2017
