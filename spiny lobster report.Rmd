@@ -4,7 +4,6 @@ author: "Erica Johnson & Kristan Culbert"
 date: "11/19/2018"
 output:
   word_document: default
-  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -61,8 +60,51 @@ traps_case = expand.dft(traps_frequency, freq = "TRAPS")
 ```
 
 
-1. Lobster abundance and fishing pressure (2012 - 2017)
-Describe trends in lobster abundance (counts) and fishing pressure (trap buoys) at the five locations from 2012 - 2017. Ignore transect information - we are only interested in evaluating abundance and pressure on the order of SITE. Note: you are not expected to use regression here - just think of ways to clearly describe annual totals visually and in text, noting important trends, events and differences.
+Monitoring spiny lobster size, abundance, and fishing pressure at Long-Term Ecological Research (LTER) Sites in the Santa Barbara Channel
+
+Erica Johnson and Kristan Culbert
+
+
+ESM 206
+Assignment 4
+19 November 2018
+
+
+Introduction
+
+The California spiny lobster (Panulirus interruptus) is an important predator in kelp forests along the Southern California coast. P. interruptus supports commercial and recreational fisheries, and has been managed as a natural resource by the state of California for over a century (California Spiny Lobster Fishery Management Plan). P. interruptus abundance has fluctuated since its decline between 1950 and 1970 due to unlawful take of lobster of sub-legal length (or “short”) size lobsters consisting of mostly egg-bearing females. After the California Department of Fish and Wildlife (CDFW) began to implement policies to prevent unlawful take of short lobster (such as traps that would allow the smallest lobsters to escape) in the 1970s, spawning stock began to rebuild, lobster populations rebounded, and more legal-size lobsters entered the fishery. While CDFW stock assessments in 2010 and 2011 suggest that sub-legal, female populations remain large and robust, P. interruptus fisheries continued to be closely managed and monitored (Status of Fisheries Report).
+
+This report uses statistical analyses to determine the relationship between lobster size, lobster abundance and fishing pressure at five Long-Term Ecological Research (LTER) sites in the Santa Barbara Channel from 2012 - 2017. Data were used to evaluate abundance and and fishing pressure in sites within marine protected areas (MPAs) and outside of MPAs. 
+
+Data & Methods
+
+Data Collection Methods
+
+Data on abundance, size, and fishing pressure of California spiny lobster (P. interruptus) were provided by the Santa Barbara Coastal LTER, funded by the US National Science Foundation (OCE-1232779) and overseen by Daniel C. Reed (Reed 2017).
+
+Lobster abundance and size were collected by research divers each summer, before the beginning of spiny lobster season, from 40-meter transects marked with stainless steel eye-bolts or rebar stakes. Divers visually estimated lobster carapace length (in mm) and counted total number of lobsters of a specific size in the transect. (see Table 1a). Fishing pressure data, determined by number of commercial trap floats, are collected every two to four weeks throughout from the lobster fishing season, from October to March (see Table 1b). Data were collected from nine, 76-meter swaths sites along the mainland, eight of which are LTER kelp forest sites (Reed 2017). The corresponding lobster abundance after the 2017 fishing season has not been captured by these data because it has been collected before the fishing season. 
+
+Data Analysis Methods
+
+Data regarding date, site location, lobster abundance, fishing pressure and fishing pressure (expressed in number of commercial trap floats), were compiled for the length of the study (August 2012 - August 2017). All data analysis and graphics were performed and created in R (version 3.5.1).  
+
+A Kruskal-Wallis rank-based test was used to determine which of the sites have significantly different lobster abundances, due to the data being non-parametric and non-continuous and therefore requiring a rank-based test. The Kruskal-Wallis test is then followed by a Cliff’s Delta test to supplement our statistical findings with effect size of the data.
+
+Mean lobster sizes (carapace length in mm) collected in 2017 were compared across five sites using a one-way analysis of variance (ANOVA) test, and a Tukey’s Honest Significant Differences (Tukey’s HSD) test. Changes in lobster size at MPA and non-MPA sites from 2012 and 2017 data were also analyzed using ANOVA and Tukey’s HSD tests. 
+
+Lobster mean sizes collected for each site in 2012 were compared to the mean sizes collected for each respective site in 2017 by using a Welch’s two-sample t-test for each respective site to determine if there are significant differences in lobster growth over time between MPA and non-MPA sites.
+
+
+Associations between legal-sized lobster catch (lobster carapace length above 82.6 mm) and LTER non-MPA and MPA sites in 2017 were determined using a Chi-squared statistical test. 
+
+
+
+Results & Discussion
+
+Trends in lobster abundance and fishing pressure within and outside of MPA boundaries
+
+Lobster abundance appears to rebound after decreases in fishing pressure in both MPA and non-MPA boundaries, with few exceptions. A Kruskall-Wallis rank sum test was used to determine significant differences in lobster abundance between LTER sites within MPAs, which returned a chi-squared value of 25.48 and a p-value of 0.1123, indicating that there is no significant difference in mean lobster abundance between at least two sites within MPAs and non-MPAs. A Cliff’s delta test was used to measure the effect size of the rank-based test. A Cliff’s delta test returned an estimate of -0.025, indicating there is a data “rank” overlap with negligible significant difference.
+
 
 
 ```{r echo=FALSE}
@@ -75,18 +117,6 @@ summary_non_mpa_size = size_case%>%
   spread(YEAR,n)
     
 kable(summary_non_mpa_size, caption ="LTER SBC lobster abundance (n) by non-MPA site, 2012- 2017") %>% 
-    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
-
-
-
-#summary MPA "lobster size" table for display
-summary_mpa_size = size_case%>% 
-  group_by(YEAR, SITE) %>% 
-  filter(SITE == "IVEE"| SITE == "NAPL") %>% 
-  count(SITE) %>% 
-  spread(YEAR,n)
-    
-kable(summary_mpa_size, caption ="LTER SBC lobster abundance (n) by MPA site, 2012- 2017") %>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
 
 ```
@@ -116,15 +146,33 @@ ggplot(abundance_traps)+
   geom_line(aes(x=year, y=lobster, col= "Lobsters"))+
   geom_line(aes(x=year, y= traps, col= "Traps"))+
   facet_wrap(~site)+
-  labs(y="Lobster Abundance (n)", x= "Year", col= "Key") +
+  labs(y="Lobster Abundance (n)", x= "Year", col= "Key", title = "Lobster Abundance and Fishing Pressure in SBC LTER Non-MPA sites, 2012-2017") +
 scale_y_continuous(sec.axis = sec_axis(~., name = "Lobster Traps (n)")) +
 theme_classic()+
   theme(axis.text.x=element_text(angle=60, hjust=1))
-  ggtitle("Lobster Abundance and Fishing Pressure in SBC LTER Non-MPA sites, 2012-2017")
-
 
 ```
+Figure 1. Lobster abundance and fishing pressure in Santa Barbara Channel LTER Non-MPA sites. 
 
+Fishing pressure at the Arroyo Quemado (AQUE) site steadily rose from 2012 to 2016 (Figure 1). Lobster counts at the start of each season are low (32 individuals) and generally do not exceed 100 individuals. 
+
+The Carpinteria Reef (CARP) site experienced the highest fishing pressure of the three sites. For three years study, the number of traps exceeded 1000 buoy traps. Fishing pressure sporadically declined between 2015 and 2017. Just after the 2015 dip in fishing pressure, lobster abundance at the CARP site increased from 90 lobster counts in 2015 to 231 lobster counts in the beginning of the 2016 season. Despite the increase in 2016 fishing pressure to almost double that of the previous year (568 to 1164), the lobster count at the beginning of the 2017 season increases from the previous year from 231 to 705. The resulting lobster count after the drastic drop in fishing pressure in the 2017 season has not been captured in the data (see Figure 1, Tables 1a and 1b). 
+
+The Mohawk Reef (MOHK) site has the lowest fishing pressure of the three sites. The number of lobster traps peak in 2012 at 567 traps, and declines  for 4 out of the 6 years (2014-2017). Lobster abundance peaks at the beginning of the 2015 season, just after an increase in lobster fishing pressure in the 2014 fishing season. As lobster fishing pressure decreases, so does the lobster abundance (see figure 1, Tables 1a and 1b).
+
+
+
+```{r echo=FALSE}
+#summary MPA "lobster size" table for display
+summary_mpa_size = size_case%>% 
+  group_by(YEAR, SITE) %>% 
+  filter(SITE == "IVEE"| SITE == "NAPL") %>% 
+  count(SITE) %>% 
+  spread(YEAR,n)
+    
+kable(summary_mpa_size, caption ="LTER SBC lobster abundance (n) by MPA site, 2012- 2017") %>% 
+    kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
+```
 
 
 ```{r echo=FALSE}
@@ -146,7 +194,11 @@ ggplot(sum_mpa)+
   facet_wrap(~SITE)
 ```
 
-```{r}
+
+The two MPA sites, IVEE and NAPL, were established as MPA sites in 2012, so fishing pressure is assumed to be zero for both sites during that year. Both IVEE and NAPL sites both show recovery of lobster abundance 2012-2015 where the lobster count doubled year after year. After 2015, the two sites’ lobster abundance take a different turn in recovery thereafter. IVEE site lobster abundance increases exponentially from 2012-2015, then shoots up linearly from a count of 193 in 2016 to a count of 606 in 2017. Populations at NAPL increased linearly between 2012- 2015, then decreased in abundance between 2015 and 2017 (see Figure 2, Table 2). 
+
+
+```{r echo=FALSE}
 #Kruskal-Wallis rank sum test is used to see if there is a significant difference in lobster abundance between any MPA sites. Null = no significant  difference, Alternative = at least 1 significant difference 
 k_test_count = kruskal.test(SITE~COUNT, data = size)
 k_test_count
@@ -162,8 +214,12 @@ cliff_eff_count
 ```
 
 
+ 
 
-```{r eval=FALSE, include=FALSE}
+
+
+
+```{r include=FALSE}
 #data exploration, lobster carapace size
 
 #new data file
@@ -184,10 +240,13 @@ ggplot(size, aes(sample=SIZE))+
 
 ```
 
+Determining effects of fishing pressure on lobster size
+
+Next,  we use the lobster size and frequency data presented in Table 3 to examine if high fishing pressure has an effect on the sizes of lobsters at each site. Sstatistical analyses were used to determine if there is a significant difference between lobster carapace lengths collected from MPA and non-MPA sites. Initial exploration of the data using histograms and quantile-quantile plots show that lobster carapace length is normally distributed for all sites in 2017. 
 
 
-2. Compare mean lobster size by site in 2017
-Compare mean lobster sizes (carapace length (mm)) across the five sites for lobster observations collected in 2017. 
+
+Table 3
 ```{r echo=FALSE}
 
 #summary table of lobster size
@@ -211,7 +270,7 @@ kable(summary_size_2017, caption ="LTER SBC mean lobster size (carapace length (
 
 ```
 
-```{r}
+```{r echo=FALSE}
 
 summary_size_2017b = summarize(size_2017,
             "Mean" = round (mean(SIZE),1),
@@ -220,21 +279,16 @@ summary_size_2017b = summarize(size_2017,
             
 ggplot(summary_size_2017b, aes(x = SITE, y = Mean))+
   geom_col(fill="#69b3a2")+
-  labs(x = "SBC LTER Site", title = "SBC LTER mean lobster carapace length, 2017", y = "Mean carapace length & standard deviation (mm)")+
+  labs(x = "SBC LTER Site", title = "SBC LTER mean lobster carapace length, 2017", y = "Mean carapace length & SD (mm)")+
   geom_errorbar(aes(ymin=Mean-SD, ymax=Mean+SD),
                 width=.2,
                 position=position_dodge(.6)) +
     theme_classic()
 ```
+To determine if there is a significant difference in lobster carapace length between the sites, the means of lobster carapace length at each site in 2017 were used to conduct a one-way ANOVA test for the multiple sample means. 
 
 
-```{r}
-
-```
-
-
-
-```{r}
+```{r echo=FALSE}
 
 #Variances are close- largest variance is not 4x  > smallest variance.
 
@@ -255,46 +309,56 @@ TukeyHSD(lobster_aov)
 
 ```
 
+The Anova test returned a p-value of 0.0085, lower than the significance level $/alpha& (0.05). There is enough evidence to know that at least one site mean carapace length is significantly different from another site mean carapace length. To determine which sites differed significantly, the Tukey’s HSD post hoc analysis was used and returned the lobster mean size at NAPL , an MPA site differed significantly from CARP, a non-MPA site (p-value = 0.02287). However NAPL also differed significantly from another MPA site, IVEE (p-value =  0.0037001). To help understand this discrepancy, more research sites are needed for comparison. 
 
 
-```{r}
+Has mean lobster size changed at MPA and non-MPA sites since 2012 and is there a significant difference in lobster growth of MPAs vs. non-MPAs?
 
-```
+We compare mean lobster size from the beginning of this study in 2012 over to 2017. We determine if each site show a significant difference in lobster growth during this five year time span. After comparing each site to their respective 2012 data and 2017 data, we can determine if MPA sites differ from non-MPA sites in mean lobster growth in size. 
 
-3. Changes in lobster size at MPA and non-MPA sites (comparing only 2012 and 2017 sizes)
-
-From the data description (http://sbc.lternet.edu/cgi-bin/showDataset.cgi?docid=knb-lter-sbc.77): 
-
-
-At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
-```{r}
+```{r echo=FALSE}
 #How do the changes in 2012-2017 of mpa sites compare to the changes in 2017-2017 of non-mpa sites. Is there a significant difference in the recovery of MPAs vs. non-MPAs?
 
 #here are some visuals on size frequency data MPA vs non-MPA sites
 size_2012_2017_non = size_non_mpa %>% 
-  filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>% 
-  group_by(SITE)
+  filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>%
+  group_by(SITE, YEAR) %>% 
+  summarize(MEAN = mean(SIZE),
+             SD = sd(SIZE))
 
 size_2012_2017_mpa = size_mpa %>% 
   filter(SIZE != "-99999", YEAR == 2012|YEAR == 2017) %>% 
-  group_by(SITE)
-
-ggplot(size_2012_2017_non, aes(x=SIZE))+
-  geom_histogram(aes(col =SITE) )+
-  labs(x = "Carapace length (mm)", y= "Frequency (n)", title = "SBC LTER non-MPA sites lobster carapace length (mm), 2012 & 2017")+
-  facet_wrap(~YEAR)+
-  theme_classic()
-
-ggplot(size_2012_2017_mpa, aes(x=SIZE))+
-  geom_histogram(aes(col =SITE))+
-  labs(x = "Carapace length (mm)", y= "Frequency (n)", title = "SBC LTER MPA sites lobster carapace length (mm), 2012 & 2017")+
-  facet_wrap(~YEAR)+
-  theme_classic()
+  group_by(SITE, YEAR)%>% 
+  summarize(MEAN = mean(SIZE),
+            SD = sd(SIZE))
 
 
 ```
 
 ```{r}
+ggplot(size_2012_2017_mpa, aes(x = SITE, y = MEAN))+
+  geom_col(fill="#69b3a2")+
+  labs(x = "SBC LTER Site", title = "SBC LTER MPA  mean lobster carapace length, 2012 & 2017", y = "Mean carapace length & SD (mm)")+
+  geom_errorbar(aes(ymin=MEAN-SD, ymax=MEAN+SD),
+                width=.2,
+                position=position_dodge(.6)) +
+  facet_wrap(~YEAR)+
+    theme_classic()
+```
+
+```{r}
+ggplot(size_2012_2017_non, aes(x = SITE, y = MEAN))+
+  geom_col(fill="#69b3a2")+
+  labs(x = "SBC LTER Site", title = "SBC LTER non-MPA mean lobster carapace length, 2012 & 2017", y = "Mean carapace length & SD (mm)")+
+  geom_errorbar(aes(ymin=MEAN-SD, ymax=MEAN+SD),
+                width=.2,
+                position=position_dodge(.6)) +
+  facet_wrap(~YEAR)+
+    theme_classic()
+```
+In comparison to the Lobster size data from each site are plotted as histograms in Figure 4ab to show compare size frequency data from 2012 and 2017 of each respective site. Figure 4a compare non-MPA sites, and Figure 4b compare the MPA sites. A Welch’s two-sample t-test  was conducted on each site with their respective 2012 and 2017 data. The resulting p-values 0.7314, 0.2211, 0.1907 for sites NAPL,CARP and AQUE indicate no significant change in mean lobster size from 2012-2017. Of those three sites, NAPL is an MPA site. Sites that showed significant change in mean lobster size were IVEE and MOHK which had 0.0361 and 0.0001 as their respective p-value. IVEE, an MPA site, showed a significant increase in mean lobster size, and MOHK a non-MPA site, showed a significant decrease in mean lobster size. More MPA and non-MPA LTER sites would be useful to further this analysis and determine if MPA and non-MPA show specific trends that could indicate a significant difference in lobster growth of MPAs vs. non-MPAs.
+
+```{r echo=FALSE}
 #1 all lobster sizes from all sites, years 2012 and 2017 only
 
 #create data file with the years of interest and grouped by site
@@ -306,7 +370,8 @@ t.test(data = NAPL,alternative = "greater",  SIZE~YEAR)
 
 #no significant change here
 ```
-```{r}
+
+```{r include=FALSE}
 IVEE = size_case %>% 
   filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "IVEE") %>% 
   group_by(YEAR)
@@ -317,7 +382,7 @@ t.test(data = IVEE,SIZE~YEAR)
 
 ```
 
-```{r}
+```{r include=FALSE}
 CARP = size_case %>% 
   filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "CARP") %>% 
   group_by(YEAR)
@@ -328,7 +393,7 @@ t.test(data = CARP,SIZE~YEAR)
 
 ```
 
-```{r}
+```{r include=FALSE}
 MOHK = size_case %>% 
   filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "MOHK") %>% 
   group_by(YEAR)
@@ -339,7 +404,7 @@ t.test(data = MOHK, SIZE~YEAR)
 #SIGNIFICANT change here
 ```
 
-```{r}
+```{r include=FALSE}
 AQUE = size_case %>% 
   filter(SIZE != "-99999", YEAR == "2017"| YEAR == "2012", SITE == "AQUE") %>% 
   group_by(YEAR)
@@ -348,16 +413,16 @@ t.test(data = AQUE,  SIZE~YEAR)
 
 #no significant change
 ```
-NOTE: In regards to number 3, MOHK, a non MPA site was the only site to show significant change from 2012 to 2017 and it was a decrease in mean carapace length. It doesn't look like fishing pressure significanlty affects carapace length...
 
 
 
 
-4. Proportions of “legal” lobsters at the 5 sites in 2017
-The legal minimum carapace size for lobster is 82.6 mm. What proportion of observed lobsters at each site are above the legal minimum? 
-Does that proportion differ significantly across the 5 sites? 
-Note: Use the chisq.test() function
-```{r}
+
+
+What proportion of observed lobsters at each site are above the legal minimum and does that proportion differ significantly across the 5 sites?
+The minimum catch for lobster is 82.6 mm. In areas that experience high fishing pressure, we might expect to find a higher proportion of lobster below the minimum catch size assuming that fisherman follow the minimum catch size regulations. For areas that do not experience fishing pressure, we may expect to see more lobsters of sizes above the minimum catch size. 
+
+```{r include=FALSE}
 #Create a data file indicating legal and not legal lobster sizes
 
 lobster_legal = size_case %>%
@@ -371,19 +436,17 @@ lobster_legal_table = lobster_legal %>%
   spread(size, n) %>% 
   select(-SITE)
 
-# this is the proportions table for the chi-squeared test
-lobster_prop_table = prop.table(as.matrix(lobster_legal_table), 1)
-lobster_prop_table
+
 
 
 
 ```
 
 
-```{r}
+```{r include=FALSE}
 
 #Chi-squared test
-chi_test = chisq.test(lobster_prop_table, simulate.p.value = TRUE)
+chi_test = chisq.test(lobster_legal_table, simulate.p.value = TRUE)
 chi_test
 
 #Null hypothesis: No association between variables studied (e.g. age and side-dish preference). The null hypothesis is independence.
@@ -393,15 +456,46 @@ chi_test
 
 ```
 
-```{r}
+```{r echo=FALSE}
 
-#this is just a nice table to present. I tried presenting the proportions table but am unable to get site names on there!
-lobster_legal_table2 = lobster_legal %>% 
-  count(SITE, size) %>% 
-  spread(size, n) 
 
-kable(lobster_legal_table2, caption ="LTER SBC legal and sub-legal lobster size frequency by site in 2017")%>% 
+
+# this is the proportions table for the chi-squeared test
+lobster_prop_table = prop.table(as.matrix(lobster_legal_table), 1)
+
+
+#this is a nicer format for the table
+kable(lobster_prop_table, caption ="LTER SBC legal and sub-legal lobster size proportions by site in 2017")%>% 
     kable_styling(bootstrap_option = c("striped", "hover"), full_width = FALSE)
+
+#I am not sure how to get the proportions table or kable to display SITE
 
 ```
 
+A chart of legal and sub-legal proportions of lobster in each site shows proportions of sub-legal lobsters being greater than proportions of legal lobster catch size. To determine if these proportions are associated with fishing pressure (determined by site) the Chi-squared proportions test was used for an analysis. The analysis returned a value of Chi-squared = 18.497 and  p-value = 0.000419989. A p-value below the significance level $/alpha& = 0.05 supports enough evidence to reject the null hypothesis of independence between variables (site and legal lobster size) studied. By rejecting the null hypothesis, we can infer that proportions of legal and illegal lobster catch determined by lobster size are associated with specific SBC LTER sites.
+
+ Conclusion
+
+P. interruptus, Santa Barbara spiny lobster, is an important marine predator that is both a keystone species in kelp forest ecosystems and a highly-desired fishery in the Santa Barbara Channel (SBC). This report aims to describe and analyze spiny lobster abundance, size, and fishing pressures in LTER sites located within and outside of MPAs in order to better understand the effects of fishing pressure on SBC spiny lobster populations. The following statements summarize the main findings of this report: 
+
+
+1) MPA and non-MPA sites have experienced an increase in lobster abundance, with no significant difference in annual lobster abundance in non-MPA sites that experience fishing pressure and MPA sites that experience no fishing pressure.
+
+2) There is no significant difference in mean lobster size (carapace length) in non-MPA sites that experience fishing pressure and MPA sites that experience no fishing pressure.
+
+3) Mean lobster size has remained relatively unchanged for three non-MPA sites and one MPA site between 2012 - 2017. The exceptions are IVEE, an MPA site, which experienced a significant increase in average lobster size, and MOHK, a non-MPA site, which experienced a significant decrease in average lobster size.
+
+4) There is a significant association between proportions of legal and sub-legal lobster size and fishing pressure. 
+
+The data used in this report was collected between August 2012 and August 2017. Further analyses should be updated with the latest 2018 SBC LTER data if this report is intended to be used for future management planning. 
+
+
+References
+
+Fishery Management Plan, California Department of Fish and Wildlife. (2018) https://www.wildlife.ca.gov/Conservation/Marine/Lobster-FMP. Accessed 17 Nov. 2018. 
+
+Reed, D. (2017) SBC LTER: Reef: Abundance, size and fishing effort for California Spiny Lobster (Panulirus interruptus), ongoing since 2012. Santa Barbara Coastal Long Term Ecological Research Project. 
+
+Status of Fisheries Report, California Department of Fish & Wildlife (2011). https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=65491&inline. Accessed 17 Nov. 2018. 
+
+Yaeger, K., & University of California, Santa Barbara. Department of Ecology, Evolution & Marine Biology. (2015). Spatial variations in catch characteristics in the California spiny lobster commercial fishery with implications for management. Santa Barbara, Calif.: University of California, Santa Barbara.
